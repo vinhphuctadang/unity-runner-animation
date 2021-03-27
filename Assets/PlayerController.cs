@@ -42,31 +42,36 @@ public class PlayerController : MonoBehaviour
         else if (action == "running"){
             animator.SetFloat("MoveSpeed", 6f);
         }
-        else if (action == "idle"){   
+        else if (action == "idle" || action == ""){   
             animator.SetFloat("MoveSpeed", 0f);
         }
     }
 
     IEnumerator GetPose()
     {
-        using (UnityWebRequest webRequest = UnityWebRequest.Get(actionUri))
-        {
-            // Request and wait for the desired page.
-            yield return webRequest.SendWebRequest();
 
-            switch (webRequest.result)
+        while (true) {
+            using (UnityWebRequest webRequest = UnityWebRequest.Get(actionUri))
             {
-                case UnityWebRequest.Result.ConnectionError:
-                case UnityWebRequest.Result.DataProcessingError:
-                case UnityWebRequest.Result.ProtocolError:
-                    Debug.LogError("Error in request:" + webRequest.error);
-                    break;
-                case UnityWebRequest.Result.Success:
-                    var text = webRequest.downloadHandler.text;
-                    var response = JsonUtility.FromJson<PoseResponse>(text);
-                    this.action = response.action;
-                    Debug.Log("New action updated: " + action);
-                    break;
+                // Request and wait for the desired page.
+                yield return webRequest.SendWebRequest();
+
+                switch (webRequest.result)
+                {
+                    case UnityWebRequest.Result.ConnectionError:
+                    case UnityWebRequest.Result.DataProcessingError:
+                    case UnityWebRequest.Result.ProtocolError:
+                        Debug.LogError("Error in request:" + webRequest.error);
+                        break;
+                    case UnityWebRequest.Result.Success:
+                        var text = webRequest.downloadHandler.text;
+                        var response = JsonUtility.FromJson<PoseResponse>(text);
+                        this.action = response.action;
+                        Debug.Log("New action updated: " + action);
+                        break;
+                }
+
+                yield return new WaitForSeconds(1f);
             }
         }
     }
